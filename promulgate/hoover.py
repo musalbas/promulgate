@@ -23,8 +23,11 @@ class Hoover:
         packetinfo['source_mac'] = rawpacket[36:42]
 
         source_org = netaddr.EUI(packetinfo['source_mac'].encode('hex'))
-        source_org = source_org.oui.registration().org
-        packetinfo['source_org'] = source_org
+        try:
+            source_org = source_org.oui.registration().org
+            packetinfo['source_org'] = source_org
+        except netaddr.core.NotRegisteredError:
+            source_org = None
 
         packetinfo['ssid'] = rawpacket[52:52 + ord(rawpacket[51])]
 
