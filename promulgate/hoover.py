@@ -1,4 +1,5 @@
 import thread
+import time
 import netaddr
 import socket
 
@@ -12,7 +13,21 @@ class Hoover:
             socket.htons(0x0003))
         self._rawsock.bind((interface, 0x0003))
 
+        self._devices = {}
+
         thread.start_new(self._receiver, ())
+
+    def _log_device(self, packetinfo):
+        if packetinfo['source_mac'] not in self._devices:
+            self._devices[packetinfo['source_mac']] = {'ssids': [],
+                'org': packetinfo['source_org']}
+
+        device = self._devices[packetinfo['source_mac']]
+
+        device['last_seen'] = time.time()
+
+        if packetinfo['ssid'] not in device['ssids']:
+            device['ssids'].append(packetinfo['ssid'])
 
     def _read_probe_request_packet(self, rawpacket):
         if ord(rawpacket[26]) != SUBTYPE_PROBE_REQUEST | TYPE_MANAGEMENT:
@@ -40,5 +55,7 @@ class Hoover:
 
             if not packetinfo:
                 continue
+
+            self._log_device(packetinfo)
 
             print packetinfo
