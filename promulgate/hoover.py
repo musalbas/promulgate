@@ -26,6 +26,8 @@ class Hoover:
         source_org = source_org.oui.registration().org
         packetinfo['source_org'] = source_org
 
+        packetinfo['ssid'] = rawpacket[52:52 + ord(rawpacket[51])]
+
         return packetinfo
 
     def _receiver(self):
